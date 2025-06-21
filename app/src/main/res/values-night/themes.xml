@@ -6,6 +6,8 @@
         <item name="colorPrimary">@color/blue_primary</item>
         <item name="colorPrimaryVariant">@color/blue_dark</item>
         <item name="colorOnPrimary">@color/white</item>
+        <item name="popupMenuStyle">@style/App.PopupMenu</item>
+        <item name="alertDialogTheme">@style/App.AlertDialog</item>
 
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>

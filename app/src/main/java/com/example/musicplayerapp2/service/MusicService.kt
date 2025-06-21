@@ -32,10 +32,14 @@ class MusicService : Service(), MediaPlayer.OnCompletionListener, MediaPlayer.On
     var repeatMode: RepeatMode = RepeatMode.OFF
 
     // LiveData 用于观察
-    val currentSong = MutableLiveData<Song?>()
-    val isPlaying = MutableLiveData<Boolean>()
+    val currentSong      = MutableLiveData<Song?>()
+    val isPlaying        = MutableLiveData<Boolean>()
     val playbackPosition = MutableLiveData<Int>()
+    val isShuffleLiveData  = MutableLiveData<Boolean>().apply { postValue(isShuffle) }
+    val repeatModeLiveData = MutableLiveData<RepeatMode>().apply { postValue(repeatMode) }
+
     private var playbackPositionTimer: Timer? = null
+
 
     companion object {
         const val EXTRA_SONG_LIST = "com.example.musicplayerapp2.service.extra.SONG_LIST"
@@ -59,6 +63,8 @@ class MusicService : Service(), MediaPlayer.OnCompletionListener, MediaPlayer.On
         mediaPlayer?.setOnCompletionListener(this)
         mediaPlayer?.setOnPreparedListener(this)
         isPlaying.postValue(false)
+        isShuffleLiveData.postValue(isShuffle)
+        repeatModeLiveData.postValue(repeatMode)
         createNotificationChannel()
     }
 
@@ -198,16 +204,20 @@ class MusicService : Service(), MediaPlayer.OnCompletionListener, MediaPlayer.On
         playSong(currentPlaylist[currentSongIndex])
     }
 
-    fun toggleShuffle() {
+    fun toggleShuffle(): Boolean {
         isShuffle = !isShuffle
+        isShuffleLiveData.postValue(isShuffle)
+        return isShuffle
     }
 
-    fun toggleRepeatMode() {
+    fun toggleRepeatMode(): RepeatMode {
         repeatMode = when (repeatMode) {
             RepeatMode.OFF -> RepeatMode.ALL
             RepeatMode.ALL -> RepeatMode.ONE
             RepeatMode.ONE -> RepeatMode.OFF
         }
+        repeatModeLiveData.postValue(repeatMode)
+        return repeatMode
     }
 
     fun seekTo(position: Int) {
