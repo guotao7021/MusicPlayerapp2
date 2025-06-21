@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">T-MusicPlayerapp</string>
+    <string name="back_button_description">返回</string>
+    <string name="song_cover_art_description">歌曲封面</string>
+    <string name="play_pause_button_description">播放/暂停按钮</string>
+    <string name="previous_button_description">上一首按钮</string>
+    <string name="next_button_description">下一首按钮</string>
+    <string name="shuffle_button_description">随机播放按钮</string>
+    <string name="repeat_button_description">重复播放按钮</string>
+    <string name="current_playlist_description">当前播放列表按钮</string>
+    <string name="no_songs_found">未找到歌曲。请点击扫描按钮来扫描设备中的歌曲。</string>
+    <string name="scan_button_text">扫描歌曲</string>
+</resources>

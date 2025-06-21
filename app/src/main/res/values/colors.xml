@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主色调 -->
+    <color name="colorPrimary">#1DB954</color>
+    <color name="colorPrimaryDark">#1AAE4F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <!-- 蓝色系（用于主题） -->
+    <color name="blue_primary">#2196F3</color>
+    <color name="blue_dark">#1976D2</color>
+    <color name="blue_light">#64B5F6</color>
+
+    <!-- 背景色 -->
+    <color name="background">#000000</color>
+    <color name="backgroundSecondary">#121212</color>
+    <color name="backgroundTertiary">#1E1E1E</color>
+    <color name="black">#000000</color>
+
+    <!-- 文字颜色 -->
+    <color name="white">#FFFFFF</color>
+    <color name="textPrimary">#FFFFFF</color>
+    <color name="textSecondary">#CCCCCC</color>
+    <color name="textTertiary">#999999</color>
+    <color name="textHint">#666666</color>
+    <color name="text_light_gray">#CCCCCC</color>
+    <color name="text_hint_gray">#888888</color>
+
+    <!-- 灰色系 -->
+    <color name="gray_darkest">#1E1E1E</color>
+    <color name="gray_darker">#2A2A2A</color>
+    <color name="gray_dark">#333333</color>
+    <color name="gray_medium">#666666</color>
+    <color name="gray_light">#999999</color>
+    <color name="gray_lighter">#CCCCCC</color>
+
+    <!-- 新增缺失的灰色定义 -->
+    <color name="dark_gray">#333333</color>
+    <color name="medium_gray">#666666</color>
+    <color name="light_gray">#999999</color>
+
+    <!-- 按钮相关颜色 -->
+    <color name="button_active">#1DB954</color>
+    <color name="button_inactive">#666666</color>
+    <color name="button_pressed">#1AAE4F</color>
+
+    <!-- 透明度相关颜色 -->
+    <color name="transparent">#00000000</color>
+    <color name="semi_transparent">#80000000</color>
+    <color name="semi_transparent_white">#80FFFFFF</color>
+    <color name="semi_transparent_black">#80000000</color>
+
+    <!-- Logo 卡片背景 -->
+    <color name="cardLogoBg">#2A2A2A</color>
+
+    <!-- 播放列表相关颜色 -->
+    <color name="playlist_icon_tint">#CCCCCC</color>
+    <color name="playlist_text_color">#FFFFFF</color>
+
+    <!-- 对话框颜色 -->
+    <color name="dialog_input_text_color">#FFFFFF</color>
+    <color name="dialog_hint_text_color">#999999</color>
+
+    <!-- 状态颜色 -->
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FF9800</color>
+    <color name="error">#F44336</color>
+
+    <!-- 播放器相关颜色 -->
+    <color name="player_background">#101010</color>
+    <color name="player_control_bg">#1E1E1E</color>
+    <color name="progress_active">#1DB954</color>
+    <color name="progress_inactive">#333333</color>
+
+    <!-- Material Design 标准颜色 -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+
+    <!-- 其他常用颜色 -->
+    <color name="red">#F44336</color>
+    <color name="green">#4CAF50</color>
+    <color name="blue">#2196F3</color>
+    <color name="orange">#FF9800</color>
+    <color name="yellow">#FFEB3B</color>
+    <color name="pink">#E91E63</color>
+    <color name="indigo">#3F51B5</color>
+    <color name="cyan">#00BCD4</color>
+</resources>

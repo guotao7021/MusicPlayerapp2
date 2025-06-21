@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    android:padding="8dp">
+
+    <!-- 歌曲信息区域 -->
+    <LinearLayout
+        android:id="@+id/layout_song_info"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/controls_layout"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- 专辑封面 -->
+        <ImageView
+            android:id="@+id/iv_pip_album_art"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_default_cover"
+            android:scaleType="centerCrop"
+            android:contentDescription="专辑封面" />
+
+        <!-- 歌曲信息 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_pip_song_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="歌曲标题"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/tv_pip_artist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="艺术家"
+                android:textColor="#CCCCCC"
+                android:textSize="10sp"
+                android:maxLines="1"
+                android:ellipsize="end" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 控制按钮区域 -->
+    <LinearLayout
+        android:id="@+id/controls_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- 上一首 -->
+        <ImageButton
+            android:id="@+id/btn_pip_previous"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_skip_previous"
+            android:tint="#FFFFFF"
+            android:scaleType="fitCenter"
+            android:contentDescription="上一首" />
+
+        <!-- 播放/暂停 -->
+        <ImageButton
+            android:id="@+id/btn_pip_play_pause"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_play"
+            android:tint="#FFFFFF"
+            android:scaleType="fitCenter"
+            android:contentDescription="播放/暂停" />
+
+        <!-- 下一首 -->
+        <ImageButton
+            android:id="@+id/btn_pip_next"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_skip_next"
+            android:tint="#FFFFFF"
+            android:scaleType="fitCenter"
+            android:contentDescription="下一首" />
+    </LinearLayout>
+
+    <!-- PiP 模式指示器 -->
+    <View
+        android:layout_width="20dp"
+        android:layout_height="2dp"
+        android:background="#FF4081"
+        android:layout_marginTop="2dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

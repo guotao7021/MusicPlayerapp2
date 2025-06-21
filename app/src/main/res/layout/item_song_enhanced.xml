@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp"
+    android:background="?attr/selectableItemBackground">
+
+    <!-- 文件夹图标 -->
+    <ImageView
+        android:id="@+id/ivFolder"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:src="@drawable/ic_folder"
+        android:tint="@color/playlist_icon_tint"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <!-- 播放列表信息 -->
+    <LinearLayout
+        android:id="@+id/playlist_info_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        app:layout_constraintStart_toEndOf="@id/ivFolder"
+        app:layout_constraintEnd_toStartOf="@id/iv_playlist_more"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- 播放列表名称 -->
+        <TextView
+            android:id="@+id/tvPlaylistName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Playlist Name"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/playlist_text_color"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+
+        <!-- 播放列表内歌曲数 -->
+        <TextView
+            android:id="@+id/tv_song_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 首歌曲"
+            android:textSize="12sp"
+            android:textColor="@color/textSecondary"
+            android:layout_marginTop="2dp"/>
+    </LinearLayout>
+
+    <!-- 更多操作按钮 -->
+    <ImageView
+        android:id="@+id/iv_playlist_more"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_more_vert"
+        android:tint="@color/textSecondary"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="4dp"
+        android:contentDescription="更多操作"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

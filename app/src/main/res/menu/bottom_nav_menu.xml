@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/allSongsFragment"
+        android:icon="@drawable/ic_music_note"
+        android:title="歌曲" />
+    <item
+        android:id="@+id/playlistsFragment"
+        android:icon="@drawable/ic_playlist"
+        android:title="播放列表" />
+    <item
+        android:id="@+id/searchFragment"
+        android:icon="@drawable/ic_search"
+        android:title="搜索" />
+</menu>
