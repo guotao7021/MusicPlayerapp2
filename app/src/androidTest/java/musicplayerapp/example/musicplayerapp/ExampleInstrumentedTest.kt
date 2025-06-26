@@ -1,4 +1,4 @@
-package com.example.musicplayerapp2
+package com.huanmie.musicplayerapp
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

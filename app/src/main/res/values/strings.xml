@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">T-MusicPlayerapp</string>
+    <string name="app_name">T-Music</string>
     <string name="back_button_description">返回</string>
     <string name="song_cover_art_description">歌曲封面</string>
     <string name="play_pause_button_description">播放/暂停按钮</string>

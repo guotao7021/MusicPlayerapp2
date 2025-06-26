@@ -1,4 +1,4 @@
-package com.example.musicplayerapp2.adapter
+package musicplayerapp.huanmie.musicplayerapp.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,8 +8,8 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.musicplayerapp2.R
-import com.example.musicplayerapp2.lyrics.LyricLine
+import com.example.musicplayerapp.R
+import com.example.musicplayerapp.lyrics.LyricLine
 
 class LyricsAdapter : ListAdapter<LyricLine, LyricsAdapter.LyricsViewHolder>(LyricsDiffCallback()) {
 

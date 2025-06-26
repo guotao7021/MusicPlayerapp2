@@ -1,4 +1,4 @@
-package com.example.musicplayerapp2.adapter
+package musicplayerapp.huanmie.musicplayerapp.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -8,8 +8,8 @@ import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.musicplayerapp2.R
-import com.example.musicplayerapp2.data.Playlist
+import com.example.musicplayerapp.R
+import com.example.musicplayerapp.data.Playlist
 
 class PlaylistAdapter(
     private val playlists: MutableList<Playlist>,

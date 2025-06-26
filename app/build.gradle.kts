@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace   = "com.example.musicplayerapp2"
+    namespace   = "com.huanmie.musicplayerapp"
     compileSdk  = 34
 
     defaultConfig {
-        applicationId     = "com.example.musicplayerapp2"
+        applicationId     = "com.huanmie.musicplayerapp"
         minSdk            = 24
         targetSdk         = 34
         versionCode       = 1
@@ -20,6 +20,23 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("C:\\Users\\86138\\AndroidStudioProjects\\MusicPlayerapp2\\keystore.jks")
+            storePassword = "admin123"
+            keyAlias = "admin"
+            keyPassword = "admin123"
+        }
+    }
+
+    buildTypes {
+        getByName("release") {
+            signingConfig    = signingConfigs.getByName("release")
+            isMinifyEnabled  = false      // 如需混淆可设 true 并配置 proguard
+        }
+    }
+
 
     buildTypes {
         release {
@@ -30,6 +47,8 @@ android {
             )
         }
     }
+
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -44,7 +63,6 @@ android {
         viewBinding = true
     }
 
-    // —— 注意：不要在这里写 implementation(...) 等依赖
 }
 
 dependencies {
@@ -78,3 +96,4 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
+

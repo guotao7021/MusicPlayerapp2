@@ -7,13 +7,13 @@
 
     <fragment
         android:id="@+id/allSongsFragment"
-        android:name="com.example.musicplayerapp2.fragments.AllSongsFragment"
+        android:name="com.huanmie.musicplayerapp.fragments.AllSongsFragment"
         android:label="All Songs"
         tools:layout="@layout/fragment_all_songs" />
 
     <fragment
         android:id="@+id/playlistsFragment"
-        android:name="com.example.musicplayerapp2.fragments.PlaylistsFragment"
+        android:name="com.huanmie.musicplayerapp.fragments.PlaylistsFragment"
         android:label="Playlists"
         tools:layout="@layout/fragment_playlists">
         <action
@@ -27,13 +27,13 @@
 
     <fragment
         android:id="@+id/searchFragment"
-        android:name="com.example.musicplayerapp2.fragments.SearchFragment"
+        android:name="com.huanmie.musicplayerapp.fragments.SearchFragment"
         android:label="Search"
         tools:layout="@layout/fragment_search" />
 
     <fragment
         android:id="@+id/playlistDetailFragment"
-        android:name="com.example.musicplayerapp2.fragments.PlaylistDetailFragment"
+        android:name="com.huanmie.musicplayerapp.fragments.PlaylistDetailFragment"
         android:label="Playlist Details"
         tools:layout="@layout/fragment_playlist_detail">
         <argument
@@ -43,7 +43,7 @@
 
     <dialog
         android:id="@+id/createPlaylistDialog"
-        android:name="com.example.musicplayerapp2.fragments.CreatePlaylistDialog"
+        android:name="com.huanmie.musicplayerapp.fragments.CreatePlaylistDialog"
         android:label="Create Playlist"
         tools:layout="@layout/dialog_create_playlist" />
 </navigation>
