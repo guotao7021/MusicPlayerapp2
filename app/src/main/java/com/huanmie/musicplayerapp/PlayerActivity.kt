@@ -18,6 +18,7 @@ import android.widget.SeekBar
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import com.huanmie.musicplayerapp.adapter.LyricsAdapter
@@ -29,6 +30,7 @@ import com.huanmie.musicplayerapp.lyrics.LyricsManager
 import com.huanmie.musicplayerapp.service.MusicService
 import com.huanmie.musicplayerapp.service.MusicService.RepeatMode
 import com.huanmie.musicplayerapp.viewmodel.PlayerViewModel
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class PlayerActivity : AppCompatActivity() {
@@ -165,12 +167,16 @@ class PlayerActivity : AppCompatActivity() {
         })
     }
 
+    /**
+     * 使用 CoroutineScope 替代 Thread，正确调用 suspend 方法
+     */
     private fun loadLyrics(song: Song) {
-        Thread {
-            val lyrics = lyricsManager.getLyrics(this, song).ifEmpty { lyricsManager.createSampleLyrics() }
+        lifecycleScope.launch {
+            val lyrics = lyricsManager.getLyrics(song)
+                .ifEmpty { lyricsManager.createSampleLyrics() }
             currentLyrics = lyrics
-            runOnUiThread { lyricsAdapter.submitList(currentLyrics) }
-        }.start()
+            lyricsAdapter.submitList(currentLyrics)
+        }
     }
 
     private fun updateLyricsHighlight(timeMs: Long) {
