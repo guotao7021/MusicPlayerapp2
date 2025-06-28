@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.huanmie.musicplayerapp.PlayerActivity
 import com.huanmie.musicplayerapp.R
@@ -49,8 +50,9 @@ class PlaylistDetailFragment : Fragment() {
     }
 
     private fun setupToolbar() {
+        // 简化返回逻辑：直接使用popBackStack，让MainActivity的底部导航处理状态重置
         binding.toolbarPlaylistDetail.setNavigationOnClickListener {
-            requireActivity().onBackPressedDispatcher.onBackPressed()
+            findNavController().popBackStack()
         }
     }
 
@@ -88,7 +90,7 @@ class PlaylistDetailFragment : Fragment() {
             } else {
                 // 播放列表不存在，返回上级页面
                 Toast.makeText(requireContext(), "播放列表不存在", Toast.LENGTH_SHORT).show()
-                requireActivity().onBackPressedDispatcher.onBackPressed()
+                findNavController().popBackStack()
             }
         }
     }

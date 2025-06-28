@@ -11,8 +11,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.huanmie.musicplayerapp.R
 import com.huanmie.musicplayerapp.data.Song
-import androidx.appcompat.view.ContextThemeWrapper
-
 
 // SongAdapter 负责显示歌曲列表
 class SongAdapter(
@@ -88,9 +86,8 @@ class SongAdapter(
             onAddToPlaylistClick: ((Song) -> Unit)?,
             onRemoveFromPlaylistClick: ((Song) -> Unit)?
         ) {
-            // 创建深色主题的Context
-            val themeWrapper = ContextThemeWrapper(anchor.context, R.style.DarkPopupMenuTheme)
-            val popup = PopupMenu(themeWrapper, anchor)
+            // 修复：直接使用普通的PopupMenu，不应用主题包装器
+            val popup = PopupMenu(anchor.context, anchor)
 
             // 根据情况添加菜单项
             if (onAddToPlaylistClick != null) {
@@ -101,7 +98,7 @@ class SongAdapter(
                 popup.menu.add(0, 2, 0, "从播放列表移除")
             }
 
-            // 强制设置背景（备用方案）
+            // 强制设置图标显示（可选）
             try {
                 val field = popup.javaClass.getDeclaredField("mPopup")
                 field.isAccessible = true

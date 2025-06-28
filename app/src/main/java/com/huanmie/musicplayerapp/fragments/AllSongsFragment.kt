@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -22,6 +21,7 @@ import com.huanmie.musicplayerapp.databinding.FragmentAllSongsBinding
 import com.huanmie.musicplayerapp.service.MusicService
 import com.huanmie.musicplayerapp.viewmodel.AllSongsViewModel
 import com.huanmie.musicplayerapp.viewmodel.PlaylistsViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class AllSongsFragment : Fragment() {
 
@@ -32,17 +32,6 @@ class AllSongsFragment : Fragment() {
     private val playlistsViewModel: PlaylistsViewModel by activityViewModels()
 
     private lateinit var songAdapter: SongAdapter
-
-    // 权限请求
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            if (granted) {
-                Toast.makeText(requireContext(), "权限已授予", Toast.LENGTH_SHORT).show()
-                allSongsViewModel.startScan(requireContext())
-            } else {
-                Toast.makeText(requireContext(), "需要存储权限来扫描音乐", Toast.LENGTH_SHORT).show()
-            }
-        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,7 +47,34 @@ class AllSongsFragment : Fragment() {
         setupRecyclerView()
         setupObservers()
         setupFab()
-        checkAndRequestPermissions()
+
+        // 检查权限状态，如果已授予则可以开始扫描
+        checkPermissionAndScan()
+    }
+
+    private fun checkPermissionAndScan() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_AUDIO
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        if (ContextCompat.checkSelfPermission(requireContext(), permission)
+            == PackageManager.PERMISSION_GRANTED) {
+            // 权限已授予，可以开始扫描
+            allSongsViewModel.startScan(requireContext())
+        } else {
+            // 权限未授予，显示提示信息
+            showPermissionRequiredState()
+        }
+    }
+
+    private fun showPermissionRequiredState() {
+        // 显示需要权限的状态
+        binding.noSongsFoundTextView.text = "需要存储权限来扫描音乐文件"
+        binding.noSongsFoundTextView.visibility = View.VISIBLE
+        binding.emptyStateLayout.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.GONE
     }
 
     private fun setupRecyclerView() {
@@ -89,17 +105,69 @@ class AllSongsFragment : Fragment() {
         // 观察歌曲列表变化
         allSongsViewModel.allSongs.observe(viewLifecycleOwner) { songs ->
             songAdapter.submitList(songs)
-            binding.noSongsFoundTextView.visibility =
-                if (songs.isEmpty()) View.VISIBLE else View.GONE
+
+            if (songs.isEmpty()) {
+                // 检查是否有权限来决定显示什么提示信息
+                val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    Manifest.permission.READ_MEDIA_AUDIO
+                } else {
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                }
+
+                if (ContextCompat.checkSelfPermission(requireContext(), permission)
+                    == PackageManager.PERMISSION_GRANTED) {
+                    binding.noSongsFoundTextView.text = "没有找到音乐"
+                } else {
+                    binding.noSongsFoundTextView.text = "需要存储权限来扫描音乐文件"
+                }
+                binding.noSongsFoundTextView.visibility = View.VISIBLE
+                binding.emptyStateLayout.visibility = View.VISIBLE
+            } else {
+                binding.noSongsFoundTextView.visibility = View.GONE
+                binding.emptyStateLayout.visibility = View.GONE
+            }
+
             binding.progressBar.visibility = View.GONE
         }
     }
 
     private fun setupFab() {
         binding.fabScanMusic.setOnClickListener {
-            binding.progressBar.visibility = View.VISIBLE
-            allSongsViewModel.startScan(requireContext())
+            val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Manifest.permission.READ_MEDIA_AUDIO
+            } else {
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            }
+
+            if (ContextCompat.checkSelfPermission(requireContext(), permission)
+                == PackageManager.PERMISSION_GRANTED) {
+                // 有权限，开始扫描
+                binding.progressBar.visibility = View.VISIBLE
+
+                allSongsViewModel.startScan(requireContext())
+            } else {
+                // 没有权限，提示用户去设置页面开启权限
+                showPermissionRequiredDialog()
+            }
         }
+    }
+
+    private fun showPermissionRequiredDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("需要存储权限")
+            .setMessage("扫描音乐文件需要存储权限。请在设置中授予T-Music存储权限。")
+            .setPositiveButton("去设置") { _, _ ->
+                try {
+                    val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = android.net.Uri.fromParts("package", requireContext().packageName, null)
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), "无法打开设置页面", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun showAddToPlaylistDialog(song: Song) {
@@ -146,35 +214,10 @@ class AllSongsFragment : Fragment() {
             .show()
     }
 
-    private fun checkAndRequestPermissions() {
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_AUDIO
-        } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        }
-
-        when {
-            ContextCompat.checkSelfPermission(requireContext(), permission)
-                    == PackageManager.PERMISSION_GRANTED -> {
-                // 权限已授予，开始扫描
-                allSongsViewModel.startScan(requireContext())
-            }
-            shouldShowRequestPermissionRationale(permission) -> {
-                // 显示权限说明
-                AlertDialog.Builder(requireContext())
-                    .setTitle("需要存储权限")
-                    .setMessage("应用需要访问您的音乐文件来扫描和播放音乐")
-                    .setPositiveButton("授予权限") { _, _ ->
-                        requestPermissionLauncher.launch(permission)
-                    }
-                    .setNegativeButton("取消", null)
-                    .show()
-            }
-            else -> {
-                // 直接请求权限
-                requestPermissionLauncher.launch(permission)
-            }
-        }
+    override fun onResume() {
+        super.onResume()
+        // 每次回到页面时检查权限状态
+        checkPermissionAndScan()
     }
 
     override fun onDestroyView() {

@@ -62,9 +62,11 @@ class LyricsManager private constructor(private val context: Context) {
 
     // VTT 时间戳正则：支持包含小时和不含小时两种格式
     private val vttPatternWithHour = Pattern.compile(
-        "(\\d{2}):(\\d{2}):(\\d{2})\\.(\\d{3})\\s*-->\\s*(\\d{2}):(\\d{2}):(\\d{2})\\.(\\d{3})"
+        "(\\d{1,2}):(\\d{2}):(\\d{2})\\.(\\d{3})\\s*-->\\s*(\\d{1,2}):(\\d{2}):(\\d{2})\\.(\\d{3})"
     )
-    private val vttPattern = Pattern.compile("(\\d{2}):(\\d{2})\\.(\\d{3})\\s*-->\\s*(\\d{2}):(\\d{2})\\.(\\d{3})")
+    private val vttPattern = Pattern.compile(
+        "(\\d{1,2}):(\\d{2})\\.(\\d{3})\\s*-->\\s*(\\d{1,2}):(\\d{2})\\.(\\d{3})"
+    )
 
     /**
      * 获取歌词（自动切换到 IO 线程）
@@ -165,7 +167,7 @@ class LyricsManager private constructor(private val context: Context) {
     }
 
     /**
-     * 在目录中查找歌词文件候选
+     * 在目录中查找歌词文件候选 - 改进VTT文件匹配
      */
     private fun findLyricsCandidates(directory: File, song: Song): List<File> {
         val candidates = mutableListOf<File>()
@@ -184,7 +186,7 @@ class LyricsManager private constructor(private val context: Context) {
                 val score = calculateMatchScore(fileName, baseName, titleLower, artistLower)
                 if (score > 0) {
                     candidates.add(lyricFile)
-                    Log.d(TAG, "找到候选文件: ${lyricFile.name}, 匹配分数: $score")
+                    Log.d(TAG, "找到候选文件: ${lyricFile.name}, 匹配分数: $score, 类型: ${lyricFile.extension}")
                 }
             }
         } catch (e: SecurityException) {
@@ -192,13 +194,17 @@ class LyricsManager private constructor(private val context: Context) {
         }
 
         Log.d(TAG, "总共找到 ${candidates.size} 个候选文件")
-        return candidates.sortedByDescending { file ->
-            calculateMatchScore(file.nameWithoutExtension.lowercase(), baseName, titleLower, artistLower)
-        }
+
+        // 按匹配分数排序，VTT文件优先级稍高（因为通常更准确）
+        return candidates.sortedWith(compareByDescending<File> { file ->
+            val baseScore = calculateMatchScore(file.nameWithoutExtension.lowercase(), baseName, titleLower, artistLower)
+            // VTT文件额外加分
+            if (file.extension.lowercase() == "vtt") baseScore + 5 else baseScore
+        })
     }
 
     /**
-     * 计算文件名匹配分数
+     * 计算文件名匹配分数 - 改进匹配算法
      */
     private fun calculateMatchScore(fileName: String, baseName: String, title: String, artist: String): Int {
         var score = 0
@@ -269,17 +275,18 @@ class LyricsManager private constructor(private val context: Context) {
     }
 
     /**
-     * 在MediaStore中搜索
+     * 在MediaStore中搜索 - 改进VTT文件查询
      */
     private fun searchInMediaStore(baseName: String, song: Song): Uri? {
         val resolver = context.contentResolver
         val projection = arrayOf(
             MediaStore.Files.FileColumns._ID,
             MediaStore.Files.FileColumns.DISPLAY_NAME,
-            MediaStore.Files.FileColumns.DATA
+            MediaStore.Files.FileColumns.DATA,
+            MediaStore.Files.FileColumns.MIME_TYPE
         )
 
-        // 构建更灵活的查询条件
+        // 构建更灵活的查询条件，包含VTT文件
         val titlePattern = "%${song.title.replace("'", "''")}%"
         val artistPattern = "%${song.artist.replace("'", "''")}%"
         val basePattern = "%$baseName%"
@@ -289,7 +296,7 @@ class LyricsManager private constructor(private val context: Context) {
 
         // 搜索 .lrc 和 .vtt 文件
         selection.append("(${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ? OR ")
-        selection.append("${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ?) AND (")
+        selection.append("${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ? OR ")
         selectionArgs.add("$basePattern.lrc")
         selectionArgs.add("$basePattern.vtt")
 
@@ -303,16 +310,19 @@ class LyricsManager private constructor(private val context: Context) {
 
         if (song.artist.isNotEmpty()) {
             selection.append("${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ? OR ")
-            selection.append("${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ? OR ")
+            selection.append("${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ?")
             selectionArgs.add("$artistPattern.lrc")
             selectionArgs.add("$artistPattern.vtt")
         }
 
-        // 移除最后的 OR 并添加文件类型限制
+        // 移除最后的 OR 并添加文件扩展名限制
         if (selection.endsWith(" OR ")) {
             selection.setLength(selection.length - 4)
         }
-        selection.append(") AND ${MediaStore.Files.FileColumns.MIME_TYPE} IS NOT NULL")
+        selection.append(") AND (")
+        selection.append("${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE '%.lrc' OR ")
+        selection.append("${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE '%.vtt'")
+        selection.append(")")
 
         val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
@@ -321,6 +331,9 @@ class LyricsManager private constructor(private val context: Context) {
         }
 
         return try {
+            Log.d(TAG, "MediaStore查询条件: $selection")
+            Log.d(TAG, "MediaStore查询参数: $selectionArgs")
+
             resolver.query(
                 uri,
                 projection,
@@ -348,12 +361,16 @@ class LyricsManager private constructor(private val context: Context) {
             val id = cursor.getLong(idColumn)
             val displayName = cursor.getString(nameColumn) ?: continue
             val fileName = displayName.substringBeforeLast('.').lowercase()
+            val extension = displayName.substringAfterLast('.').lowercase()
 
-            val score = calculateMatchScore(fileName, baseName.lowercase(), title.lowercase(), artist.lowercase())
+            val baseScore = calculateMatchScore(fileName, baseName.lowercase(), title.lowercase(), artist.lowercase())
+            // VTT文件额外加分
+            val score = if (extension == "vtt") baseScore + 5 else baseScore
+
             if (score > 0 && (bestMatch == null || score > bestMatch.second)) {
                 val fileUri = ContentUris.withAppendedId(MediaStore.Files.getContentUri("external"), id)
                 bestMatch = Pair(fileUri, score)
-                Log.d(TAG, "找到匹配文件: $displayName, 分数: $score")
+                Log.d(TAG, "找到匹配文件: $displayName, 分数: $score, 类型: $extension")
             }
         }
 
@@ -415,38 +432,91 @@ class LyricsManager private constructor(private val context: Context) {
     }
 
     /**
-     * 解析 VTT 文件（本地）
+     * 解析 VTT 文件（本地） - 改进的VTT解析逻辑
      */
     private fun parseVttFile(file: File): List<LyricLine> {
         val list = mutableListOf<LyricLine>()
-        val lines = file.readLines()
-        var i = 0
-        while (i < lines.size && (lines[i].isBlank() || lines[i].startsWith("WEBVTT"))) i++
-        while (i < lines.size) {
-            val line = lines[i++].trim()
-            if (line.matches("\\d+".toRegex())) continue
-            var start = 0L
-            vttPatternWithHour.matcher(line).takeIf { it.find() }?.let { m ->
-                val h  = m.group(1)?.toLongOrNull() ?: 0L
-                val mm = m.group(2)?.toLongOrNull() ?: 0L
-                val ss = m.group(3)?.toLongOrNull() ?: 0L
-                val ms = m.group(4)?.toLongOrNull() ?: 0L
-                start = h * 3600000 + mm * 60000 + ss * 1000 + ms
-            } ?: vttPattern.matcher(line).takeIf { it.find() }?.let { m ->
-                val mm = m.group(1)?.toLongOrNull() ?: 0L
-                val ss = m.group(2)?.toLongOrNull() ?: 0L
-                val ms = m.group(3)?.toLongOrNull() ?: 0L
-                start = mm * 60000 + ss * 1000 + ms
+        Log.d(TAG, "开始解析VTT文件: ${file.name}")
+
+        try {
+            val lines = file.readLines()
+            var i = 0
+
+            // 跳过WEBVTT头部
+            while (i < lines.size) {
+                val line = lines[i].trim()
+                if (line.startsWith("WEBVTT") || line.isEmpty()) {
+                    i++
+                    continue
+                }
+                break
             }
-            val sb = StringBuilder()
-            while (i < lines.size && lines[i].isNotBlank()) {
-                sb.append(lines[i++].trim()).append('\n')
+
+            while (i < lines.size) {
+                val line = lines[i++].trim()
+
+                // 跳过空行和序号行
+                if (line.isEmpty() || line.matches("\\d+".toRegex())) {
+                    continue
+                }
+
+                var startTime = 0L
+                var foundTimeStamp = false
+
+                // 尝试解析时间戳
+                vttPatternWithHour.matcher(line).takeIf { it.find() }?.let { m ->
+                    val h  = m.group(1)?.toLongOrNull() ?: 0L
+                    val mm = m.group(2)?.toLongOrNull() ?: 0L
+                    val ss = m.group(3)?.toLongOrNull() ?: 0L
+                    val ms = m.group(4)?.toLongOrNull() ?: 0L
+                    startTime = h * 3600000 + mm * 60000 + ss * 1000 + ms
+                    foundTimeStamp = true
+                    Log.d(TAG, "解析时间戳(带小时): ${m.group(0)} -> ${startTime}ms")
+                } ?: vttPattern.matcher(line).takeIf { it.find() }?.let { m ->
+                    val mm = m.group(1)?.toLongOrNull() ?: 0L
+                    val ss = m.group(2)?.toLongOrNull() ?: 0L
+                    val ms = m.group(3)?.toLongOrNull() ?: 0L
+                    startTime = mm * 60000 + ss * 1000 + ms
+                    foundTimeStamp = true
+                    Log.d(TAG, "解析时间戳(无小时): ${m.group(0)} -> ${startTime}ms")
+                }
+
+                if (foundTimeStamp) {
+                    // 读取字幕文本
+                    val textBuilder = StringBuilder()
+                    while (i < lines.size && lines[i].trim().isNotEmpty()) {
+                        val textLine = lines[i++].trim()
+                        // 移除VTT标签
+                        val cleanText = removeVttTags(textLine)
+                        if (cleanText.isNotEmpty()) {
+                            if (textBuilder.isNotEmpty()) {
+                                textBuilder.append(" ")
+                            }
+                            textBuilder.append(cleanText)
+                        }
+                    }
+
+                    val text = textBuilder.toString().trim()
+                    if (text.isNotEmpty()) {
+                        list.add(LyricLine(startTime, text))
+                        Log.d(TAG, "添加歌词行: $startTime ms -> $text")
+                    }
+                }
             }
-            val txt = sb.toString().trimEnd()
-            if (txt.isNotEmpty()) list.add(LyricLine(start, txt))
+        } catch (e: Exception) {
+            Log.e(TAG, "解析VTT文件时出错: $e")
         }
+
         Log.d(TAG, "VTT解析完成，共${list.size}行歌词")
         return list.sortedBy { it.timeMs }
+    }
+
+    /**
+     * 移除VTT标签
+     */
+    private fun removeVttTags(text: String): String {
+        // 移除VTT格式标签，如 <c.yellow>text</c>
+        return text.replace(Regex("<[^>]*>"), "").trim()
     }
 
     /**
@@ -470,44 +540,85 @@ class LyricsManager private constructor(private val context: Context) {
     }
 
     /**
-     * 解析 VTT 文件（URI）
+     * 解析 VTT 文件（URI） - 改进的VTT URI解析
      */
     private suspend fun parseVttUri(uri: Uri): List<LyricLine> = withContext(Dispatchers.IO) {
         val list = mutableListOf<LyricLine>()
+        Log.d(TAG, "开始解析VTT URI: $uri")
+
         try {
             context.contentResolver.openInputStream(uri)?.use { stream ->
-                BufferedReader(InputStreamReader(stream)).useLines { lines ->
-                    val iter = lines.iterator()
-                    while (iter.hasNext()) {
-                        val line = iter.next().trim()
-                        if (line.isBlank() || line.startsWith("WEBVTT") || line.matches("\\d+".toRegex())) continue
-                        var start = 0L
+                BufferedReader(InputStreamReader(stream)).use { reader ->
+                    val lines = reader.readLines()
+                    var i = 0
+
+                    // 跳过WEBVTT头部
+                    while (i < lines.size) {
+                        val line = lines[i].trim()
+                        if (line.startsWith("WEBVTT") || line.isEmpty()) {
+                            i++
+                            continue
+                        }
+                        break
+                    }
+
+                    while (i < lines.size) {
+                        val line = lines[i++].trim()
+
+                        // 跳过空行和序号行
+                        if (line.isEmpty() || line.matches("\\d+".toRegex())) {
+                            continue
+                        }
+
+                        var startTime = 0L
+                        var foundTimeStamp = false
+
+                        // 尝试解析时间戳
                         vttPatternWithHour.matcher(line).takeIf { it.find() }?.let { m ->
                             val h  = m.group(1)?.toLongOrNull() ?: 0L
                             val mm = m.group(2)?.toLongOrNull() ?: 0L
                             val ss = m.group(3)?.toLongOrNull() ?: 0L
                             val ms = m.group(4)?.toLongOrNull() ?: 0L
-                            start = h * 3600000 + mm * 60000 + ss * 1000 + ms
+                            startTime = h * 3600000 + mm * 60000 + ss * 1000 + ms
+                            foundTimeStamp = true
+                            Log.d(TAG, "解析URI时间戳(带小时): ${m.group(0)} -> ${startTime}ms")
                         } ?: vttPattern.matcher(line).takeIf { it.find() }?.let { m ->
                             val mm = m.group(1)?.toLongOrNull() ?: 0L
                             val ss = m.group(2)?.toLongOrNull() ?: 0L
                             val ms = m.group(3)?.toLongOrNull() ?: 0L
-                            start = mm * 60000 + ss * 1000 + ms
+                            startTime = mm * 60000 + ss * 1000 + ms
+                            foundTimeStamp = true
+                            Log.d(TAG, "解析URI时间戳(无小时): ${m.group(0)} -> ${startTime}ms")
                         }
-                        val sb = StringBuilder()
-                        while (iter.hasNext()) {
-                            val txtLine = iter.next()
-                            if (txtLine.isBlank()) break
-                            sb.append(txtLine.trim()).append('\n')
+
+                        if (foundTimeStamp) {
+                            // 读取字幕文本
+                            val textBuilder = StringBuilder()
+                            while (i < lines.size && lines[i].trim().isNotEmpty()) {
+                                val textLine = lines[i++].trim()
+                                // 移除VTT标签
+                                val cleanText = removeVttTags(textLine)
+                                if (cleanText.isNotEmpty()) {
+                                    if (textBuilder.isNotEmpty()) {
+                                        textBuilder.append(" ")
+                                    }
+                                    textBuilder.append(cleanText)
+                                }
+                            }
+
+                            val text = textBuilder.toString().trim()
+                            if (text.isNotEmpty()) {
+                                list.add(LyricLine(startTime, text))
+                                Log.d(TAG, "添加URI歌词行: $startTime ms -> $text")
+                            }
                         }
-                        val txt = sb.toString().trimEnd()
-                        if (txt.isNotEmpty()) list.add(LyricLine(start, txt))
                     }
                 }
             }
         } catch (e: Exception) {
             Log.e(TAG, "解析VTT URI时出错: $e")
         }
+
         Log.d(TAG, "VTT URI解析完成，共${list.size}行歌词")
         return@withContext list.sortedBy { it.timeMs }
     }
@@ -532,9 +643,10 @@ class LyricsManager private constructor(private val context: Context) {
             LyricLine(5_000, "请在音乐文件同目录下"),
             LyricLine(10_000, "放置对应的 .lrc 或 .vtt 歌词文件"),
             LyricLine(15_000, "文件名需包含歌曲名或歌手名"),
-            LyricLine(20_000, "例如: 歌曲.mp3 -> 歌曲.lrc"),
-            LyricLine(25_000, "点击任意歌词可跳转播放"),
-            LyricLine(30_000, "点击专辑封面切换歌词显示")
+            LyricLine(20_000, "例如: 歌曲.mp3 -> 歌曲.lrc 或 歌曲.vtt"),
+            LyricLine(25_000, "支持标准VTT格式歌词文件"),
+            LyricLine(30_000, "点击任意歌词可跳转播放"),
+            LyricLine(35_000, "点击专辑封面切换歌词显示")
         )
     }
 }

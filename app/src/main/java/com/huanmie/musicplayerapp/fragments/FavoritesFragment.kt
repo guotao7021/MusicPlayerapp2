@@ -6,8 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,7 +26,6 @@ class FavoritesFragment : Fragment() {
 
     private lateinit var favoritesManager: FavoritesManager
     private lateinit var songAdapter: SongAdapter
-    private var backPressedCallback: OnBackPressedCallback? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,59 +43,43 @@ class FavoritesFragment : Fragment() {
         setupToolbar()
         setupRecyclerView()
         observeFavorites()
-        setupBackPressed()
-    }
-
-    private fun setupBackPressed() {
-        // 正确的 OnBackPressedCallback 语法
-        backPressedCallback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                try {
-                    val navController = findNavController()
-                    if (!navController.popBackStack()) {
-                        // 如果导航失败，手动返回
-                        requireActivity().finish()
-                    }
-                } catch (e: Exception) {
-                    // 异常情况下的处理
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
-                }
-            }
-        }
-
-        // 添加回调
-        requireActivity().onBackPressedDispatcher.addCallback(
-            viewLifecycleOwner,
-            backPressedCallback!!
-        )
     }
 
     private fun setupToolbar() {
-        // 修复返回按钮功能
-        binding.toolbarFavorites.setNavigationOnClickListener {
-            try {
-                // 尝试使用 Navigation 组件返回
-                val navController = findNavController()
-                if (!navController.popBackStack()) {
-                    // 如果 Navigation 失败，手动关闭 Fragment
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
-                }
-            } catch (e: Exception) {
-                // 最后的备用方案
-                requireActivity().onBackPressedDispatcher.onBackPressed()
-            }
+        // 返回按钮点击
+        binding.btnBack.setOnClickListener {
+            findNavController().popBackStack()
         }
 
-        // 设置菜单项点击监听
-        binding.toolbarFavorites.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.menu_clear_favorites -> {
+        // 更多菜单按钮点击
+        binding.btnMoreMenu.setOnClickListener { view ->
+            showPopupMenu(view)
+        }
+    }
+
+    private fun showPopupMenu(anchor: View) {
+        val popup = PopupMenu(requireContext(), anchor)
+
+        // 手动添加菜单项
+        popup.menu.add(0, 1, 0, "返回播放列表")
+        popup.menu.add(0, 2, 1, "清空我的最爱")
+
+        // 设置点击监听
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                1 -> {
+                    findNavController().popBackStack()
+                    true
+                }
+                2 -> {
                     showClearFavoritesDialog()
                     true
                 }
                 else -> false
             }
         }
+
+        popup.show()
     }
 
     private fun setupRecyclerView() {
@@ -131,7 +113,7 @@ class FavoritesFragment : Fragment() {
     }
 
     private fun updateUI(favorites: List<Song>) {
-        binding.toolbarFavorites.title = "我的最爱"
+        binding.tvToolbarTitle.text = "我的最爱"
 
         val songCount = favorites.size
         binding.tvFavoritesCount.text = when (songCount) {
@@ -214,9 +196,6 @@ class FavoritesFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // 清理回调
-        backPressedCallback?.remove()
-        backPressedCallback = null
         _binding = null
     }
 }

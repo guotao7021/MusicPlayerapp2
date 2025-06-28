@@ -55,6 +55,14 @@
         android:id="@+id/favoritesFragment"
         android:name="com.huanmie.musicplayerapp.fragments.FavoritesFragment"
         android:label="我的最爱"
-        tools:layout="@layout/fragment_favorites" />
+        tools:layout="@layout/fragment_favorites">
+
+        <!-- 明确指定返回到播放列表的action -->
+        <action
+            android:id="@+id/action_favoritesFragment_to_playlistsFragment"
+            app:destination="@id/playlistsFragment"
+            app:popUpTo="@id/playlistsFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
 
 </navigation>
