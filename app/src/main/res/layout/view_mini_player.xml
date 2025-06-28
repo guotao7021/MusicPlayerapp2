@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    android:background="@drawable/bg_mini_player"
+    android:elevation="8dp"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="8dp">
+
+    <!-- 主体点击区域 -->
+    <View
+        android:id="@+id/mini_player_main"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/controls_container" />
+
+    <!-- 专辑封面 -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/mini_album_art_card"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="2dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/iv_mini_album_art"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_default_cover"
+            android:contentDescription="专辑封面" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- 歌曲信息 -->
+    <LinearLayout
+        android:id="@+id/song_info_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        app:layout_constraintStart_toEndOf="@+id/mini_album_art_card"
+        app:layout_constraintEnd_toStartOf="@+id/controls_container"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <TextView
+            android:id="@+id/tv_mini_song_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="歌曲标题"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tv_mini_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="艺术家"
+            android:textColor="@color/text_light_gray"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <!-- 控制按钮容器 -->
+    <LinearLayout
+        android:id="@+id/controls_container"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- 播放/暂停按钮 -->
+        <ImageButton
+            android:id="@+id/btn_mini_play_pause"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/btn_glow_circle"
+            android:src="@drawable/ic_play"
+            android:tint="@color/white"
+            android:scaleType="centerInside"
+            android:contentDescription="播放/暂停" />
+
+        <!-- 下一首按钮 -->
+        <ImageButton
+            android:id="@+id/btn_mini_next"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/btn_glow_circle"
+            android:src="@drawable/ic_skip_next"
+            android:tint="@color/white"
+            android:scaleType="centerInside"
+            android:contentDescription="下一首" />
+
+        <!-- 关闭按钮 -->
+        <ImageButton
+            android:id="@+id/btn_mini_close"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/btn_glow_circle"
+            android:src="@drawable/ic_remove"
+            android:tint="@color/text_light_gray"
+            android:scaleType="centerInside"
+            android:contentDescription="关闭" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

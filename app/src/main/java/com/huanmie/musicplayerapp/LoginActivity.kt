@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.huanmie.musicplayerapp.databinding.ActivityLoginBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class LoginActivity : AppCompatActivity() {
 
@@ -132,13 +133,35 @@ class LoginActivity : AppCompatActivity() {
 
     private fun showLoginSuccess() {
         if (::binding.isInitialized) {
-            Toast.makeText(this, "登录成功！欢迎使用音乐播放器", Toast.LENGTH_SHORT).show()
+            // 使用MaterialAlertDialogBuilder并应用深色主题
+            MaterialAlertDialogBuilder(this)
+                .setTitle("登录成功")
+                .setMessage("欢迎使用音乐播放器！")
+                .setPositiveButton("进入应用") { dialog, _ ->
+                    dialog.dismiss()
+                    // 可以在这里添加额外的逻辑
+                }
+                .setCancelable(false)
+                .show()
         }
     }
 
     private fun showLoginError() {
         if (::binding.isInitialized) {
+            // 保持原有的Toast，或者也可以改为对话框
             Toast.makeText(this, "用户名或密码错误", Toast.LENGTH_SHORT).show()
+
+            // 或者使用对话框版本：
+            /*
+            MaterialAlertDialogBuilder(this)
+                .setTitle("登录失败")
+                .setMessage("用户名或密码错误，请重试")
+                .setPositiveButton("确定") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
+            */
+
             val shakeAnimator = ObjectAnimator.ofFloat(
                 binding.layoutLoginForm,
                 "translationX",

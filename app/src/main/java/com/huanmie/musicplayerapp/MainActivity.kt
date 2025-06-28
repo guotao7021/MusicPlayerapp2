@@ -1,10 +1,14 @@
 package com.huanmie.musicplayerapp
 
 import android.Manifest
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AlertDialog
@@ -12,8 +16,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.huanmie.musicplayerapp.service.MusicService
 import com.huanmie.musicplayerapp.utils.UserManager
+import com.huanmie.musicplayerapp.utils.FavoritesManager  // 添加这一行导入
 import com.huanmie.musicplayerapp.lyrics.LyricsManager
+import com.huanmie.musicplayerapp.views.MiniPlayerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,12 +30,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var userManager: UserManager
+    private lateinit var favoritesManager: FavoritesManager
+    private lateinit var miniPlayerView: MiniPlayerView
+    private var musicService: MusicService? = null
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as MusicService.MusicBinder
+            musicService = binder.getService()
+
+            // 绑定最小化播放器到音乐服务
+            miniPlayerView.bindMusicService(musicService!!, this@MainActivity)
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            musicService = null
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         userManager = UserManager.getInstance(this)
+        favoritesManager = FavoritesManager.getInstance(this)
+
+        // 初始化最小化播放器
+        miniPlayerView = findViewById(R.id.mini_player_view)
 
         // 无需在这里判断登录，保留 onResume 检查
         userManager.refreshLoginTime()
@@ -38,6 +67,15 @@ class MainActivity : AppCompatActivity() {
 
         // —— 请求存储权限，确保能扫描外部歌词文件 —— //
         requestStoragePermissionIfNeeded()
+
+        // 绑定音乐服务
+        bindMusicService()
+    }
+
+    private fun bindMusicService() {
+        Intent(this, MusicService::class.java).also { intent ->
+            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
     }
 
     private fun requestStoragePermissionIfNeeded() {
@@ -66,7 +104,7 @@ class MainActivity : AppCompatActivity() {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // 存储权限已授予，后续可以正常加载歌词
             } else {
-                AlertDialog.Builder(this)
+                MaterialAlertDialogBuilder(this)
                     .setTitle("存储权限被拒绝")
                     .setMessage("未授予存储权限，将无法扫描并加载歌词文件。")
                     .setPositiveButton("确定", null)
@@ -111,20 +149,21 @@ class MainActivity : AppCompatActivity() {
                 java.util.Locale.getDefault()
             ).format(java.util.Date(it.loginTime))
 
-            AlertDialog.Builder(this)
+            // 使用MaterialAlertDialogBuilder，会自动应用主题中的alertDialogTheme
+            MaterialAlertDialogBuilder(this)
                 .setTitle("用户信息")
                 .setMessage("""
-                    用户名: ${it.username}
-                    登录时间: $loginTimeFormatted
-                    记住登录: ${if (it.isRemembered) "是" else "否"}
-                """.trimIndent())
+                用户名: ${it.username}
+                登录时间: $loginTimeFormatted
+                记住登录: ${if (it.isRemembered) "是" else "否"}
+            """.trimIndent())
                 .setPositiveButton("确定", null)
                 .show()
         }
     }
 
     private fun showLogoutDialog() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("退出登录")
             .setMessage("确定要退出当前账户吗？")
             .setPositiveButton("确定") { _, _ -> logout() }
@@ -150,6 +189,22 @@ class MainActivity : AppCompatActivity() {
         // 每次回到前台检查登录状态，处理超时等情况
         if (!userManager.isLoggedIn()) {
             redirectToLogin()
+        }
+
+        // 检查是否需要显示最小化播放器
+        musicService?.let { service ->
+            if (service.currentSong.value != null && service.isPlaying.value == true) {
+                miniPlayerView.show()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            unbindService(connection)
+        } catch (e: Exception) {
+            // 服务可能已经解绑
         }
     }
 }

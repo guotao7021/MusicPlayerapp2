@@ -15,6 +15,7 @@ import android.os.IBinder
 import android.util.Rational
 import android.view.View
 import android.widget.SeekBar
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -29,6 +30,7 @@ import com.huanmie.musicplayerapp.lyrics.LyricLine
 import com.huanmie.musicplayerapp.lyrics.LyricsManager
 import com.huanmie.musicplayerapp.service.MusicService
 import com.huanmie.musicplayerapp.service.MusicService.RepeatMode
+import com.huanmie.musicplayerapp.utils.FavoritesManager
 import com.huanmie.musicplayerapp.viewmodel.PlayerViewModel
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -39,13 +41,15 @@ class PlayerActivity : AppCompatActivity() {
     private lateinit var pipControlsBinding: LayoutPipControlsBinding
     private val playerViewModel: PlayerViewModel by viewModels()
     private var musicService: MusicService? = null
-    private var isFavorite = false
     private var isLyricsVisible = true
     private var currentLyrics: List<LyricLine> = emptyList()
 
     // 歌词相关
     private lateinit var lyricsAdapter: LyricsAdapter
     private lateinit var lyricsManager: LyricsManager
+
+    // 我的最爱管理器
+    private lateinit var favoritesManager: FavoritesManager
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -76,8 +80,12 @@ class PlayerActivity : AppCompatActivity() {
             musicService?.let {
                 updateShuffleButtonUI(it.isShuffle)
                 updateRepeatButtonUI(it.repeatMode)
-                updateFavoriteButtonUI(isFavorite)
                 updatePlayPauseButtonUI(it.isPlaying.value == true)
+
+                // 初始化我的最爱按钮状态
+                it.currentSong.value?.let { song ->
+                    updateFavoriteButtonUI(favoritesManager.isFavorite(song))
+                }
             }
         }
 
@@ -91,16 +99,15 @@ class PlayerActivity : AppCompatActivity() {
         binding = ActivityPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // 初始化FavoritesManager
+        favoritesManager = FavoritesManager.getInstance(this)
+
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        // 修复返回按钮逻辑 - 点击返回时最小化而不是退出
         binding.toolbar.setNavigationOnClickListener {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-                packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE)
-            ) {
-                enterPipMode()
-            } else {
-                onBackPressedDispatcher.onBackPressed()
-            }
+            handleBackPressed()
         }
 
         // 初始化歌词视图
@@ -115,6 +122,50 @@ class PlayerActivity : AppCompatActivity() {
             else startService(intent)
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
+    }
+
+    /**
+     * 处理返回按钮点击 - 优先最小化而不是退出
+     */
+    private fun handleBackPressed() {
+        // 检查是否有正在播放的音乐
+        val isPlaying = musicService?.isPlaying?.value == true
+        val hasSong = musicService?.currentSong?.value != null
+
+        if (hasSong && isPlaying) {
+            // 如果有歌曲正在播放，最小化播放器回到主页面
+            minimizeToMainActivity()
+        } else {
+            // 如果没有歌曲播放或已暂停，可以尝试PiP模式或直接返回
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE)
+            ) {
+                enterPipMode()
+            } else {
+                minimizeToMainActivity()
+            }
+        }
+    }
+
+    /**
+     * 最小化回到主页面而不关闭播放器
+     */
+    private fun minimizeToMainActivity() {
+        // 启动MainActivity并将其置于前台，但不结束当前Activity
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        startActivity(intent)
+
+        // 不调用finish()，让播放器Activity保持在后台
+        // 这样用户可以通过最近任务或通知栏重新回到播放器
+    }
+
+    /**
+     * 重写onBackPressed方法以处理系统返回键
+     */
+    override fun onBackPressed() {
+        handleBackPressed()
     }
 
     private fun setupLyrics() {
@@ -142,10 +193,13 @@ class PlayerActivity : AppCompatActivity() {
         pipControlsBinding.btnPipNext.setOnClickListener { musicService?.playNext() }
         pipControlsBinding.btnPipPrevious.setOnClickListener { musicService?.playPrevious() }
         pipControlsBinding.layoutSongInfo.setOnClickListener {
-            if (isInPictureInPictureMode)
-                startActivity(
-                    Intent(this, PlayerActivity::class.java).apply { flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT }
-                )
+            if (isInPictureInPictureMode) {
+                // 从PiP模式回到全屏播放器
+                val intent = Intent(this, PlayerActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                }
+                startActivity(intent)
+            }
         }
     }
 
@@ -154,17 +208,28 @@ class PlayerActivity : AppCompatActivity() {
             song?.let {
                 updateUI(it)
                 loadLyrics(it)
+                // 更新我的最爱按钮状态
+                updateFavoriteButtonUI(favoritesManager.isFavorite(it))
                 if (isInPictureInPictureMode) updatePipUI()
             }
         })
+
         musicService?.isPlaying?.observe(this, Observer<Boolean> { playing ->
             updatePlayPauseButtonUI(playing)
         })
+
         musicService?.playbackPosition?.observe(this, Observer<Int> { pos ->
             binding.seekBar.progress = pos
             binding.tvCurrentTime.text = formatTime(pos.toLong())
             updateLyricsHighlight(pos.toLong())
         })
+
+        // 观察我的最爱数据变化
+        favoritesManager.favoriteSongs.observe(this) { favorites ->
+            musicService?.currentSong?.value?.let { currentSong ->
+                updateFavoriteButtonUI(favoritesManager.isFavorite(currentSong))
+            }
+        }
     }
 
     /**
@@ -208,7 +273,23 @@ class PlayerActivity : AppCompatActivity() {
         binding.btnPrevious.setOnClickListener { musicService?.playPrevious() }
         binding.btnShuffle.setOnClickListener { musicService?.toggleShuffle()?.let { updateShuffleButtonUI(it) } }
         binding.btnRepeat.setOnClickListener { musicService?.toggleRepeatMode()?.let { updateRepeatButtonUI(it) } }
-        binding.btnFavorite.setOnClickListener { isFavorite = !isFavorite; updateFavoriteButtonUI(isFavorite) }
+
+        // 我的最爱按钮点击事件
+        binding.btnFavorite.setOnClickListener {
+            musicService?.currentSong?.value?.let { song ->
+                val isNowFavorite = favoritesManager.toggleFavorite(song)
+                updateFavoriteButtonUI(isNowFavorite)
+
+                // 显示提示信息
+                val message = if (isNowFavorite) {
+                    "已添加到我的最爱"
+                } else {
+                    "已从我的最爱中移除"
+                }
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            }
+        }
+
         binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) musicService?.seekTo(progress)
@@ -287,10 +368,10 @@ class PlayerActivity : AppCompatActivity() {
         binding.btnShuffle.imageTintList = ColorStateList.valueOf(color)
     }
 
-    private fun updateFavoriteButtonUI(fav: Boolean) {
-        val iconRes = if (fav) R.drawable.ic_favorite_full else R.drawable.ic_favorite_border
+    private fun updateFavoriteButtonUI(isFavorite: Boolean) {
+        val iconRes = if (isFavorite) R.drawable.ic_favorite_full else R.drawable.ic_favorite_border
         binding.btnFavorite.setImageResource(iconRes)
-        val color = if (fav) getColor(R.color.button_active) else getColor(R.color.text_light_gray)
+        val color = if (isFavorite) getColor(R.color.button_active) else getColor(R.color.text_light_gray)
         binding.btnFavorite.imageTintList = ColorStateList.valueOf(color)
     }
 

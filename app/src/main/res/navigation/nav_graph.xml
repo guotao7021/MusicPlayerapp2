@@ -5,45 +5,56 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/allSongsFragment">
 
+    <!-- 全部歌曲页面 -->
     <fragment
         android:id="@+id/allSongsFragment"
         android:name="com.huanmie.musicplayerapp.fragments.AllSongsFragment"
-        android:label="All Songs"
+        android:label="全部歌曲"
         tools:layout="@layout/fragment_all_songs" />
 
+    <!-- 播放列表页面 -->
     <fragment
         android:id="@+id/playlistsFragment"
         android:name="com.huanmie.musicplayerapp.fragments.PlaylistsFragment"
-        android:label="Playlists"
+        android:label="播放列表"
         tools:layout="@layout/fragment_playlists">
+
+        <!-- 跳转到播放列表详情 -->
         <action
             android:id="@+id/action_playlistsFragment_to_playlistDetailFragment"
             app:destination="@id/playlistDetailFragment" />
 
+        <!-- 跳转到我的最爱 -->
         <action
-            android:id="@+id/action_playlistsFragment_to_createPlaylistDialog"
-            app:destination="@id/createPlaylistDialog" />
+            android:id="@+id/action_playlistsFragment_to_favoritesFragment"
+            app:destination="@id/favoritesFragment" />
+
     </fragment>
 
+    <!-- 搜索页面 -->
     <fragment
         android:id="@+id/searchFragment"
         android:name="com.huanmie.musicplayerapp.fragments.SearchFragment"
-        android:label="Search"
+        android:label="搜索"
         tools:layout="@layout/fragment_search" />
 
+    <!-- 播放列表详情页面 -->
     <fragment
         android:id="@+id/playlistDetailFragment"
         android:name="com.huanmie.musicplayerapp.fragments.PlaylistDetailFragment"
-        android:label="Playlist Details"
+        android:label="播放列表详情"
         tools:layout="@layout/fragment_playlist_detail">
+
         <argument
             android:name="playlistId"
             app:argType="long" />
     </fragment>
 
-    <dialog
-        android:id="@+id/createPlaylistDialog"
-        android:name="com.huanmie.musicplayerapp.fragments.CreatePlaylistDialog"
-        android:label="Create Playlist"
-        tools:layout="@layout/dialog_create_playlist" />
+    <!-- 我的最爱页面 -->
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="com.huanmie.musicplayerapp.fragments.FavoritesFragment"
+        android:label="我的最爱"
+        tools:layout="@layout/fragment_favorites" />
+
 </navigation>

@@ -113,20 +113,84 @@
     </style>
 
     <style name="App.PopupMenu" parent="Widget.MaterialComponents.PopupMenu">
-        <item name="android:popupBackground">@color/backgroundSecondary</item>
-        <item name="android:itemTextAppearance">@style/App.PopupMenu.Text</item>
-        <item name="android:itemBackground">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:popupBackground">@drawable/popup_menu_background</item>
+        <item name="android:textAppearance">@style/App.PopupMenu.Text</item>
+        <item name="android:itemBackground">@drawable/popup_menu_item_background</item>
+        <item name="android:dropDownVerticalOffset">4dp</item>
+        <item name="android:dropDownHorizontalOffset">0dp</item>
     </style>
 
+    <!-- PopupMenu文字样式 - 确保深色文字 -->
     <style name="App.PopupMenu.Text" parent="TextAppearance.MaterialComponents.Body1">
-        <item name="android:textColor">@color/textPrimary</item>
+        <item name="android:textColor">@color/white</item>
         <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:padding">12dp</item>
+    </style>
+
+    <!-- 深色PopupMenu主题覆盖 -->
+    <style name="DarkPopupMenuTheme" parent="ThemeOverlay.MaterialComponents.Dark">
+        <item name="android:popupBackground">@drawable/popup_menu_background</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/textSecondary</item>
+        <item name="colorControlNormal">@color/white</item>
+    </style>
+
+
+    <style name="DarkDialogTheme" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <!-- 背景颜色 -->
+        <item name="android:windowBackground">@color/backgroundSecondary</item>
+        <item name="colorSurface">@color/backgroundSecondary</item>
+
+        <!-- 文字颜色 -->
+        <item name="colorOnSurface">@color/white</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/textSecondary</item>
+
+        <!-- 按钮颜色 -->
+        <item name="colorPrimary">@color/blue_primary</item>
+        <item name="colorAccent">@color/blue_primary</item>
+
+        <!-- 标题样式 -->
+        <item name="materialAlertDialogTitleTextStyle">@style/DarkDialogTitle</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/DarkDialogBody</item>
+    </style>
+
+    <!-- 对话框标题样式 -->
+    <style name="DarkDialogTitle" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- 对话框内容样式 -->
+    <style name="DarkDialogBody" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
+        <item name="android:textColor">@color/textSecondary</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineSpacingExtra">4dp</item>
     </style>
 
 
     <style name="App.AlertDialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
-        <item name="colorOnSurface">@color/popup_menu_text_color</item>
+        <!-- 表面颜色 -->
+        <item name="colorSurface">@color/backgroundSecondary</item>
+        <item name="colorOnSurface">@color/white</item>
+
+        <!-- 文字颜色 -->
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/textSecondary</item>
+
+        <!-- 按钮颜色 -->
         <item name="colorPrimary">@color/blue_primary</item>
+        <item name="buttonBarPositiveButtonStyle">@style/DarkDialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/DarkDialogButton</item>
+    </style>
+
+    <style name="DarkDialogButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/blue_primary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
     </style>
 
     <!-- 页面标题文字样式 -->

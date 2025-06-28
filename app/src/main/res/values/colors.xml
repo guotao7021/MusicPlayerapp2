@@ -88,5 +88,7 @@
     <color name="indigo">#3F51B5</color>
     <color name="cyan">#00BCD4</color>
 
+    <!-- 弹出菜单颜色 -->
     <color name="popup_menu_text_color">@color/text_hint_gray</color>
+
 </resources>

@@ -20,6 +20,8 @@ import com.huanmie.musicplayerapp.databinding.DialogCreatePlaylistBinding
 import com.huanmie.musicplayerapp.databinding.FragmentPlaylistsBinding
 import com.huanmie.musicplayerapp.viewmodel.PlaylistsViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.huanmie.musicplayerapp.utils.FavoritesManager
+import androidx.navigation.fragment.findNavController
 
 class PlaylistsFragment : Fragment() {
     private var _binding: FragmentPlaylistsBinding? = null
@@ -44,6 +46,18 @@ class PlaylistsFragment : Fragment() {
         setupRecyclerView()
         observeViewModel()
         setupClickListeners()
+        observeFavoritesCount()
+    }
+
+    private fun observeFavoritesCount() {
+        val favoritesManager = FavoritesManager.getInstance(requireContext())
+        favoritesManager.favoriteSongs.observe(viewLifecycleOwner) { favorites ->
+            updateFavoritesCardUI(favorites.size)
+        }
+    }
+
+    private fun updateFavoritesCardUI(count: Int) {
+        // 可以在这里添加显示收藏数量的逻辑
     }
 
     private fun setupRecyclerView() {
@@ -82,14 +96,13 @@ class PlaylistsFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        // 添加播放列表按钮
         binding.fabAddPlaylist.setOnClickListener {
             showCreatePlaylistDialog()
         }
 
         // 功能卡片点击事件
         binding.cardMyFavorites.setOnClickListener {
-            Toast.makeText(requireContext(), "我的最爱功能开发中", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_playlistsFragment_to_favoritesFragment)
         }
 
         binding.cardMyCollections.setOnClickListener {
