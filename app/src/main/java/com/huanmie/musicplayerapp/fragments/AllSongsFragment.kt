@@ -8,20 +8,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.huanmie.musicplayerapp.PlayerActivity
+import com.huanmie.musicplayerapp.R
 import com.huanmie.musicplayerapp.adapter.SongAdapter
 import com.huanmie.musicplayerapp.data.Song
 import com.huanmie.musicplayerapp.databinding.FragmentAllSongsBinding
 import com.huanmie.musicplayerapp.service.MusicService
 import com.huanmie.musicplayerapp.viewmodel.AllSongsViewModel
 import com.huanmie.musicplayerapp.viewmodel.PlaylistsViewModel
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class AllSongsFragment : Fragment() {
 
@@ -181,9 +182,16 @@ class AllSongsFragment : Fragment() {
 
         val playlistNames = currentPlaylists.map { it.name }.toTypedArray()
 
-        AlertDialog.Builder(requireContext())
+        // Create an ArrayAdapter with a custom layout to ensure correct text color
+        val adapter = ArrayAdapter(
+            requireContext(),
+            R.layout.dialog_list_item, // Use the new custom layout
+            playlistNames
+        )
+
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle("添加到播放列表")
-            .setItems(playlistNames) { dialog, which ->
+            .setAdapter(adapter) { dialog, which ->
                 try {
                     val selectedPlaylist = currentPlaylists[which]
                     if (playlistsViewModel.addSongToPlaylist(song, selectedPlaylist.id)) {
