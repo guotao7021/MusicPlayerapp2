@@ -9,6 +9,12 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/menu_check_update"
+        android:icon="@drawable/ic_system_update"
+        android:title="检查更新"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/menu_logout"
         android:icon="@drawable/ic_logout"
         android:title="退出登录"

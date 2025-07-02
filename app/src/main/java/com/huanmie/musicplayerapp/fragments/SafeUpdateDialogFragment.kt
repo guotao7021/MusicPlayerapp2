@@ -9,7 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.huanmie.musicplayerapp.R
-import com.huanmie.musicplayerapp.databinding.DialogSafeUpdateBinding
+import com.huanmie.musicplayerapp.databinding.DialogSimpleUpdateBinding
 import com.huanmie.musicplayerapp.utils.SafeUpdateManager
 
 /**
@@ -17,7 +17,7 @@ import com.huanmie.musicplayerapp.utils.SafeUpdateManager
  */
 class SafeUpdateDialogFragment : DialogFragment() {
 
-    private var _binding: DialogSafeUpdateBinding? = null
+    private var _binding: DialogSimpleUpdateBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var updateManager: SafeUpdateManager
@@ -44,7 +44,7 @@ class SafeUpdateDialogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        _binding = DialogSafeUpdateBinding.inflate(layoutInflater)
+        _binding = DialogSimpleUpdateBinding.inflate(layoutInflater)
         setupUI()
 
         return MaterialAlertDialogBuilder(requireContext())

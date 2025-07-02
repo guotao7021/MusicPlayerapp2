@@ -19,14 +19,12 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.huanmie.musicplayerapp.service.MusicService
 import com.huanmie.musicplayerapp.utils.UserManager
 import com.huanmie.musicplayerapp.utils.FavoritesManager
-import com.huanmie.musicplayerapp.utils.SimpleUpdateManager
+import com.huanmie.musicplayerapp.utils.SafeUpdateManager
 import com.huanmie.musicplayerapp.lyrics.LyricsManager
 import com.huanmie.musicplayerapp.views.MiniPlayerView
-import com.huanmie.musicplayerapp.dialogs.SimpleUpdateDialogFragment
+import com.huanmie.musicplayerapp.dialogs.SafeUpdateDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.activity.result.contract.ActivityResultContracts
-import com.huanmie.musicplayerapp.utils.SafeUpdateManager
-import com.huanmie.musicplayerapp.dialogs.SafeUpdateDialogFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,7 +36,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var userManager: UserManager
     private lateinit var favoritesManager: FavoritesManager
-    private lateinit var updateManager: SimpleUpdateManager
+    private lateinit var updateManager: SafeUpdateManager
     private lateinit var miniPlayerView: MiniPlayerView
     private var musicService: MusicService? = null
 
@@ -69,7 +67,7 @@ class MainActivity : AppCompatActivity() {
 
         userManager = UserManager.getInstance(this)
         favoritesManager = FavoritesManager.getInstance(this)
-        updateManager = SimpleUpdateManager.getInstance(this)
+        updateManager = SafeUpdateManager.getInstance(this)
 
         // 初始化最小化播放器
         miniPlayerView = findViewById(R.id.mini_player_view)
@@ -146,9 +144,9 @@ class MainActivity : AppCompatActivity() {
     /**
      * 显示更新对话框
      */
-    private fun showUpdateDialog(updateInfo: SimpleUpdateManager.UpdateInfo) {
-        val dialog = SimpleUpdateDialogFragment.newInstance(updateInfo)
-        dialog.show(supportFragmentManager, "simple_update_dialog")
+    private fun showUpdateDialog(updateInfo: SafeUpdateManager.UpdateInfo) {
+        val dialog = SafeUpdateDialogFragment.newInstance(updateInfo)
+        dialog.show(supportFragmentManager, "safe_update_dialog")
     }
 
     private fun checkAndRequestPermissionsOnFirstLogin() {
