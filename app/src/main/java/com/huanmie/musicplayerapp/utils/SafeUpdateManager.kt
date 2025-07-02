@@ -24,13 +24,15 @@ class SafeUpdateManager private constructor(private val context: Context) {
         // 更新信息配置（在发布新版本时需要手动更新这些信息）
         const val LATEST_VERSION_CODE = 4  // 最新版本号
         const val LATEST_VERSION_NAME = "3.1"  // 最新版本名
-        const val UPDATE_LOG = """
-• 修复了音乐播放的已知问题
-• 优化了歌词显示功能  
-• 新增了播放列表管理
-• 提升了应用性能和稳定性
-• 适配了 Android 15 系统
+        // FIX: Changed from "const val" to "val" to allow for the .trimIndent() function call.
+        val UPDATE_LOG = """
+            • 修复了音乐播放的已知问题
+            • 优化了歌词显示功能
+            • 新增了播放列表管理
+            • 提升了应用性能和稳定性
+            • 适配了 Android 15 系统
         """.trimIndent()
+
 
         @Volatile
         private var INSTANCE: SafeUpdateManager? = null

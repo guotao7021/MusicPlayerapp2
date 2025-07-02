@@ -3,6 +3,7 @@ package com.huanmie.musicplayerapp
 import android.animation.ObjectAnimator
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,9 +11,10 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import com.huanmie.musicplayerapp.databinding.ActivityLoginBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.huanmie.musicplayerapp.databinding.ActivityLoginBinding
 
 class LoginActivity : AppCompatActivity() {
 
@@ -36,10 +38,9 @@ class LoginActivity : AppCompatActivity() {
 
         sharedPreferences = getSharedPreferences("login_prefs", MODE_PRIVATE)
 
-        // 【已移除】原有的自動登入檢查邏輯已被移除，確保每次都進入此頁面
-
         setupUI()
         startEnterAnimations()
+        setupOnBackPressed() // FIX: Set up the modern back press handler
     }
 
     private fun setupUI() {
@@ -133,13 +134,11 @@ class LoginActivity : AppCompatActivity() {
 
     private fun showLoginSuccess() {
         if (::binding.isInitialized) {
-            // 使用MaterialAlertDialogBuilder并应用深色主题
             MaterialAlertDialogBuilder(this)
                 .setTitle("登录成功")
                 .setMessage("欢迎使用音乐播放器！")
                 .setPositiveButton("进入应用") { dialog, _ ->
                     dialog.dismiss()
-                    // 可以在这里添加额外的逻辑
                 }
                 .setCancelable(false)
                 .show()
@@ -148,20 +147,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun showLoginError() {
         if (::binding.isInitialized) {
-            // 保持原有的Toast，或者也可以改为对话框
             Toast.makeText(this, "用户名或密码错误", Toast.LENGTH_SHORT).show()
-
-            // 或者使用对话框版本：
-            /*
-            MaterialAlertDialogBuilder(this)
-                .setTitle("登录失败")
-                .setMessage("用户名或密码错误，请重试")
-                .setPositiveButton("确定") { dialog, _ ->
-                    dialog.dismiss()
-                }
-                .show()
-            */
-
             val shakeAnimator = ObjectAnimator.ofFloat(
                 binding.layoutLoginForm,
                 "translationX",
@@ -176,12 +162,11 @@ class LoginActivity : AppCompatActivity() {
 
     private fun saveLoginState(username: String) {
         try {
-            // 【修復】使用 commit() 確保同步寫入，防止跳轉後狀態還沒更新
             sharedPreferences.edit()
                 .putBoolean("is_logged_in", true)
                 .putString("username", username)
                 .putLong("login_time", System.currentTimeMillis())
-                .commit()
+                .commit() // Using commit() for synchronous write as intended
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -206,7 +191,14 @@ class LoginActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+
+            // FIX: Use the modern API for activity transitions
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
+            } else {
+                @Suppress("DEPRECATION")
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(this, "跳转失败，请重试", Toast.LENGTH_SHORT).show()
@@ -243,18 +235,25 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    override fun onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            super.onBackPressed()
-            finishAffinity()
-            return
-        }
-        this.doubleBackToExitPressedOnce = true
-        Toast.makeText(this, "再按一次返回键退出应用", Toast.LENGTH_SHORT).show()
-        Handler(Looper.getMainLooper()).postDelayed({
-            doubleBackToExitPressedOnce = false
-        }, 2000)
+    // FIX: Implement the modern back press handling using OnBackPressedDispatcher
+    private fun setupOnBackPressed() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (doubleBackToExitPressedOnce) {
+                    finishAffinity() // Exit the app
+                } else {
+                    doubleBackToExitPressedOnce = true
+                    Toast.makeText(this@LoginActivity, "再按一次返回键退出应用", Toast.LENGTH_SHORT).show()
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        doubleBackToExitPressedOnce = false
+                    }, 2000)
+                }
+            }
+        })
     }
+
+    // REMOVED: The deprecated onBackPressed() method is no longer needed.
+    // override fun onBackPressed() { ... }
 
     override fun onDestroy() {
         super.onDestroy()
