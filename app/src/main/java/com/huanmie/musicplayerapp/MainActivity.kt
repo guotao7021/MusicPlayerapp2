@@ -19,19 +19,26 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.huanmie.musicplayerapp.service.MusicService
 import com.huanmie.musicplayerapp.utils.UserManager
 import com.huanmie.musicplayerapp.utils.FavoritesManager
+import com.huanmie.musicplayerapp.utils.SimpleUpdateManager
 import com.huanmie.musicplayerapp.lyrics.LyricsManager
 import com.huanmie.musicplayerapp.views.MiniPlayerView
+import com.huanmie.musicplayerapp.dialogs.SimpleUpdateDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.activity.result.contract.ActivityResultContracts
+import com.huanmie.musicplayerapp.utils.SafeUpdateManager
+import com.huanmie.musicplayerapp.dialogs.SafeUpdateDialogFragment
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val PREF_PERMISSION_REQUESTED = "permission_requested"
+        private const val PREF_UPDATE_CHECK_TIME = "last_update_check"
+        private const val UPDATE_CHECK_INTERVAL = 24 * 60 * 60 * 1000L // 24小时检查一次
     }
 
     private lateinit var userManager: UserManager
     private lateinit var favoritesManager: FavoritesManager
+    private lateinit var updateManager: SimpleUpdateManager
     private lateinit var miniPlayerView: MiniPlayerView
     private var musicService: MusicService? = null
 
@@ -62,6 +69,7 @@ class MainActivity : AppCompatActivity() {
 
         userManager = UserManager.getInstance(this)
         favoritesManager = FavoritesManager.getInstance(this)
+        updateManager = SimpleUpdateManager.getInstance(this)
 
         // 初始化最小化播放器
         miniPlayerView = findViewById(R.id.mini_player_view)
@@ -77,6 +85,70 @@ class MainActivity : AppCompatActivity() {
 
         // 检查并请求权限（仅在首次登录后）
         checkAndRequestPermissionsOnFirstLogin()
+
+        // 检查版本更新（延迟执行，避免影响启动体验）
+        checkForUpdatesIfNeeded()
+    }
+
+    /**
+     * 如果需要的话检查版本更新
+     */
+    private fun checkForUpdatesIfNeeded() {
+        // 延迟3秒执行，避免影响应用启动
+        miniPlayerView.postDelayed({
+            val lastCheckTime = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                .getLong(PREF_UPDATE_CHECK_TIME, 0)
+            val currentTime = System.currentTimeMillis()
+
+            // 如果距离上次检查超过24小时，则自动检查更新
+            if (currentTime - lastCheckTime > UPDATE_CHECK_INTERVAL) {
+                checkForUpdates(false)
+            }
+        }, 3000)
+    }
+
+    /**
+     * 检查版本更新
+     */
+    private fun checkForUpdates(isManual: Boolean = false) {
+        try {
+            val updateInfo = updateManager.checkForUpdate()
+
+            // 更新最后检查时间
+            getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+                .edit()
+                .putLong(PREF_UPDATE_CHECK_TIME, System.currentTimeMillis())
+                .apply()
+
+            if (updateInfo != null) {
+                // 发现新版本，显示更新对话框
+                showUpdateDialog(updateInfo)
+            } else if (isManual) {
+                // 手动检查且没有新版本时显示提示
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("检查更新")
+                    .setMessage("当前已是最新版本")
+                    .setPositiveButton("确定", null)
+                    .show()
+            }
+        } catch (e: Exception) {
+            if (isManual) {
+                // 手动检查时显示错误信息
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("检查更新失败")
+                    .setMessage("检查更新时发生错误，请稍后重试")
+                    .setPositiveButton("确定", null)
+                    .show()
+            }
+        }
+    }
+
+    /**
+     * 显示更新对话框
+     */
+    private fun showUpdateDialog(updateInfo: SimpleUpdateManager.UpdateInfo) {
+        val dialog = SimpleUpdateDialogFragment.newInstance(updateInfo)
+        dialog.show(supportFragmentManager, "simple_update_dialog")
     }
 
     private fun checkAndRequestPermissionsOnFirstLogin() {
@@ -232,6 +304,10 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.menu_user_info -> {
                 showUserInfo()
+                true
+            }
+            R.id.menu_check_update -> {
+                checkForUpdates(true) // 手动检查更新
                 true
             }
             R.id.menu_logout -> {

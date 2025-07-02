@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- 标题区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_system_update"
+            android:layout_marginEnd="16dp"
+            app:tint="@color/colorPrimary" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="发现新版本"
+                android:textSize="20sp"
+                android:textColor="@color/white"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_current_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="当前版本：3.0"
+                android:textSize="14sp"
+                android:textColor="@color/text_light_gray"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:id="@+id/tv_new_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="最新版本：3.1"
+                android:textSize="14sp"
+                android:textColor="@color/colorPrimary"
+                android:layout_marginTop="2dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- 更新日志 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="更新内容："
+        android:textSize="16sp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="200dp"
+        android:background="@drawable/bg_rounded_dark"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/tv_update_log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="• 修复了一些已知问题\n• 优化了播放体验\n• 新增了歌词显示功能"
+            android:textSize="14sp"
+            android:textColor="@color/text_light_gray"
+            android:lineSpacingExtra="4dp" />
+
+    </ScrollView>
+
+    <!-- 更新说明 -->
+    <TextView
+        android:id="@+id/tv_update_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="推荐通过 Google Play 商店更新，安全可靠："
+        android:textSize="14sp"
+        android:textColor="@color/white"
+        android:layout_marginBottom="16dp" />
+
+    <!-- 主要更新按钮 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_google_play"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="打开 Google Play 更新"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@color/white"
+        app:cornerRadius="8dp"
+        app:icon="@drawable/ic_google_play"
+        app:iconGravity="start"
+        android:layout_marginBottom="12dp" />
+
+    <!-- 辅助选项 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_copy_link"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="复制链接"
+            android:textColor="@color/colorPrimary"
+            app:strokeColor="@color/colorPrimary"
+            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_content_copy"
+            app:iconTint="@color/colorPrimary"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_app_settings"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="应用设置"
+            android:textColor="@color/colorPrimary"
+            app:strokeColor="@color/colorPrimary"
+            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_settings"
+            app:iconTint="@color/colorPrimary"
+            android:layout_marginStart="8dp" />
+
+    </LinearLayout>
+
+    <!-- 底部按钮区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_skip"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="跳过此版本"
+            android:textColor="@color/text_light_gray"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_later"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="稍后提醒"
+            android:textColor="@color/text_light_gray" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -2,13 +2,37 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- 权限声明 -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <!-- 必需的基础权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!-- 前台服务权限 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+    <!-- 通知权限（Android 13+） -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- 音频文件访问权限（按Android版本区分） -->
+    <!-- Android 13+ 使用分区存储权限 -->
+    <uses-permission
+        android:name="android.permission.READ_MEDIA_AUDIO"
+        android:minSdkVersion="33" />
+
+    <!-- Android 12及以下使用传统存储权限 -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!--
+    注意：移除了以下敏感权限，改用替代方案：
+    - WRITE_EXTERNAL_STORAGE: 使用应用专有目录
+    - MANAGE_EXTERNAL_STORAGE: 仅在绝对必要时使用
+    - REQUEST_INSTALL_PACKAGES: 改为引导用户到Google Play
+    -->
 
     <uses-feature
         android:name="android.software.picture_in_picture"
@@ -24,7 +48,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MusicPlayerApp2.Dark"
-        tools:targetApi="31">
+        android:requestLegacyExternalStorage="true"
+        tools:targetApi="35">
+
+        <!-- FileProvider用于在应用内共享文件 -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths" />
+        </provider>
 
         <!-- 启动页面Activity - 应用入口 -->
         <activity
@@ -73,4 +109,3 @@
     </application>
 
 </manifest>
-

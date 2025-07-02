@@ -9,14 +9,14 @@ plugins {
 
 android {
     namespace   = "com.huanmie.musicplayerapp"
-    compileSdk  = 34
+    compileSdk  = 35  // 更新到API 35
 
     defaultConfig {
         applicationId     = "com.huanmie.musicplayerapp"
         minSdk            = 24
-        targetSdk         = 34
-        versionCode       = 3
-        versionName       = "3.0"
+        targetSdk         = 35  // 更新到API 35
+        versionCode       = 4
+        versionName       = "4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -37,7 +37,6 @@ android {
         }
     }
 
-
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -47,8 +46,6 @@ android {
             )
         }
     }
-
-
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -62,38 +59,41 @@ android {
         // **关键**：启用 ViewBinding，才能生成 com.example.musicplayerapp2.databinding.ActivityPlayerBinding
         viewBinding = true
     }
-
 }
 
 dependencies {
-    // 图片加载
+    // 图片加载 - 更新版本
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    kapt("com.github.bumptech.glide:compiler:4.14.2")
-    // Android 核心扩展（如果还没加）
-    implementation("androidx.core:core-ktx:1.10.1")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")  // 统一版本
 
-    // AppCompat：提供 Theme.AppCompat.Dialog.Alert 等
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    // Android 核心扩展 - 更新版本
+    implementation("androidx.core:core-ktx:1.13.1")
 
-    // Material Components：提供 Theme.MaterialComponents.DayNight.NoActionBar 及 colorPrimary、materialButtonStyle 等
-    implementation("com.google.android.material:material:1.8.0")
+    // AppCompat - 更新版本
+    implementation("androidx.appcompat:appcompat:1.7.0")
+
+    // Material Components - 更新版本
+    implementation("com.google.android.material:material:1.12.0")
 
     // JSON 序列化
     implementation("com.google.code.gson:gson:2.10.1")
 
-    // LiveData Kotlin 扩展 —— .value/.postValue() 等属性由此提供
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
-    // （可选）Lifecycle 运行时的 KTX 扩展
-    implementation("androidx.navigation:navigation-fragment-ktx:2.5.3")
-    implementation("androidx.navigation:navigation-ui-ktx:2.5.3")
+    // LiveData Kotlin 扩展 - 更新版本
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.4")
+
+    // Navigation - 更新版本
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 
     // AndroidX Media，用于控制媒体播放
     implementation(libs.androidx.media)
 
     // 单元测试
     testImplementation("junit:junit:4.13.2")
-    // Android Instrumentation 测试
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    // Android Instrumentation 测试 - 更新版本
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("com.google.code.gson:gson:2.10.1")
 }
-
